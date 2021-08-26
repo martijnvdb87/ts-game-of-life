@@ -49,6 +49,7 @@ class Cell {
 
 class Board {
   cells: Array<Array<Cell>> = new Array<Array<Cell>>();
+  rules: Array<Rule> = new Array<Rule>();
 
   constructor(width: number, height: number) {
     this.createBoard(width, height);
@@ -67,31 +68,53 @@ class Board {
     }
   };
 
-  runNextTurn() {
+  addRule(rule: Rule) {
+    this.rules.push(rule);
+  };
+
+  nextTurn() {
+    console.log(this.cells);
     for(let y = 0; y < this.cells.length; y++) {
       for(let x = 0; x < this.cells[y].length; x++) {
         const cell: Cell = this.cells[y][x];
-        const livingNeighbours: number = cell.countLivingNeighbours();
+
+        this.applyRules(cell);
+      }
+    }
+
+    for(let y = 0; y < this.cells.length; y++) {
+      for(let x = 0; x < this.cells[y].length; x++) {
+        const cell: Cell = this.cells[y][x];
+
+        cell.isAlive = cell.isAliveInNextTurn;
       }
     }
   };
 
-  run() {
-
+  applyRules(cell: Cell) {
+    this.rules.forEach((rule: Rule) => {
+      rule.run(cell);
+    });
   };
 }
 
-type liveOrDie = "live" | "die";
-
 class Rule {
-  hasNeighboursAmount: number;
-  newState: liveOrDie;
+  action: CallableFunction;
+  hasNeighboursAmount: number | undefined;
 
-  constructor(hasNeighboursAmount: number, newState: liveOrDie) {
+  constructor(action: CallableFunction, hasNeighboursAmount?: number) {
+    this.action = action;
     this.hasNeighboursAmount = hasNeighboursAmount;
-    this.newState = newState;
-  }
+  };
+
+  run(cell: Cell) {
+    if (this.hasNeighboursAmount === null || cell.countLivingNeighbours() === this.hasNeighboursAmount) {
+      cell.isAliveInNextTurn = !!this.action(cell);
+    }
+  };
 }
 
 let board: Board = new Board(10, 10);
-console.log(board.cells[0][0].getNeighbours());
+board.addRule(new Rule((() => true)));
+
+setInterval(() => board.nextTurn(), 3000);
