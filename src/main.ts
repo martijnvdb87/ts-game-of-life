@@ -97,7 +97,7 @@ class Board {
         cell.isAliveInNextTurn = null;
       }
     }
-    this.render();
+    this.update();
   };
 
   applyRules(cell: Cell) {
@@ -110,19 +110,42 @@ class Board {
     let output = ``;
 
     for (let y: number = 0; y < this.cells.length; y++) {
-      output += `<div class="row" data-row="${(y + 1)}">`;
+      output += `<div class="board__row" data-row="${(y + 1)}">`;
 
       for (let x: number = 0; x < this.cells[y].length; x++) {
         let cell: Cell = this.cells[y][x];
 
-        output += `<div class="cell" data-row="${(y + 1)}" data-cell="${(x + 1)}">${cell.isAlive ? `X` : ``}</div>`;
+        output += `<div class="board__cell" data-row="${(y + 1)}" data-cell="${(x + 1)}"></div>`;
       }
 
       output += `</div>`;
     }
 
     if (this.element) {
+      this.element.classList.add(`board`);
       this.element.innerHTML = output;
+
+      this.update();
+    }
+  };
+
+  update() {
+    for (let y: number = 0; y < this.cells.length; y++) {
+      for (let x: number = 0; x < this.cells[y].length; x++) {
+        let cell: Cell = this.cells[y][x];
+
+        const cellElement: HTMLDivElement | null | undefined = this.element?.querySelector(`[data-row="${y}"][data-cell="${x}"]`);
+
+        if (!cellElement) {
+          continue;
+        }
+
+        if(cell.isAlive) {
+          cellElement.classList.add(`board__cell--is-alive`);
+        } else {
+          cellElement.classList.remove(`board__cell--is-alive`);
+        }
+      }
     }
   };
 };
