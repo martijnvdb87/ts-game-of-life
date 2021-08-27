@@ -129,25 +129,58 @@ class Board {
 
 class Rule {
   action: CallableFunction;
-  hasNeighboursAmount: number | undefined;
 
-  constructor(action: CallableFunction, hasNeighboursAmount?: number) {
+  constructor(action: CallableFunction) {
     this.action = action;
-    this.hasNeighboursAmount = hasNeighboursAmount;
   };
 
   run(cell: Cell) {
-    if (typeof this.hasNeighboursAmount === "undefined" || cell.countLivingNeighbours() === this.hasNeighboursAmount) {
-      cell.isAliveInNextTurn = this.action(cell);
+    const newState = this.action(cell);
+
+    if (newState !== null) {
+      cell.isAliveInNextTurn = newState;
     }
   };
 };
 
 let board: Board = new Board(document.getElementById("app"), 10, 10);
-// board.addRule(new Rule((cell: Cell) => {
-//   console.log(cell.isAlive);
-//   return cell.isAlive
-// }));
+
+board.addRule(new Rule((cell: Cell) => {
+  if(cell.isAlive) {
+    return cell.countLivingNeighbours() > 2
+  }
+  
+  return null;
+}));
+
+board.addRule(new Rule((cell: Cell) => {
+  if(cell.isAlive) {
+    if (cell.countLivingNeighbours() === 2 || cell.countLivingNeighbours() === 3) {
+      return true;
+    }
+
+    return false;
+  }
+
+  return null;
+}));
+
+board.addRule(new Rule((cell: Cell) => {
+  if(cell.isAlive) {
+    return cell.countLivingNeighbours() < 4;
+  }
+  
+  return null;
+}));
+
+board.addRule(new Rule((cell: Cell) => {
+  if(!cell.isAlive) {
+    return cell.countLivingNeighbours() === 3;
+  }
+
+  return null;
+}));
+
 board.cells[3][3].isAlive = true;
 board.render();
 
