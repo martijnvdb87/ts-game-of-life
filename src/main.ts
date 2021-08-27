@@ -2,6 +2,7 @@ import './style.css'
 
 class Cell {
   board: Board;
+  element: HTMLElement | undefined;
   x: number;
   y: number;
   neighbours: Array<Cell> = new Array<Cell>();
@@ -107,26 +108,54 @@ class Board {
   };
 
   render() {
-    let output = ``;
+    if (!this.element) {
+      return;
+    }
+
+    this.element.innerHTML = ``;
+
+    let containerElement: HTMLDivElement = document.createElement(`div`);
+    containerElement.classList.add(`board__container`);
 
     for (let y: number = 0; y < this.cells.length; y++) {
-      output += `<div class="board__row" data-row="${(y + 1)}">`;
+      let rowElement: HTMLDivElement = document.createElement(`div`);
+      rowElement.classList.add(`board__row`);
+      rowElement.dataset.row = `${y + 1}`;
 
       for (let x: number = 0; x < this.cells[y].length; x++) {
         let cell: Cell = this.cells[y][x];
 
-        output += `<div class="board__cell" data-row="${(y + 1)}" data-cell="${(x + 1)}"></div>`;
+        let cellElement: HTMLDivElement = document.createElement(`div`);
+        cellElement.classList.add(`board__cell`);
+        cellElement.dataset.row = `${y + 1}`;
+        cellElement.dataset.cell = `${x + 1}`;
+
+        cellElement.addEventListener(`click`, () => {
+          cell.isAlive = !cell.isAlive;
+          this.update();
+        });
+
+        cell.element = cellElement;
+
+        rowElement.append(cellElement);
       }
 
-      output += `</div>`;
+      containerElement.append(rowElement);
     }
 
-    if (this.element) {
-      this.element.classList.add(`board`);
-      this.element.innerHTML = output;
+    const nextTurnElement: HTMLButtonElement = document.createElement(`button`);
+    nextTurnElement.classList.add(`board__next-turn`);
+    nextTurnElement.innerHTML = `Next Turn`;
 
-      this.update();
-    }
+    this.element.classList.add(`board`);
+    this.element.append(containerElement);
+    this.element.append(nextTurnElement);
+
+    nextTurnElement.addEventListener("click", () => {
+      this.nextTurn();
+    });
+
+    this.update();
   };
 
   update() {
@@ -134,16 +163,10 @@ class Board {
       for (let x: number = 0; x < this.cells[y].length; x++) {
         let cell: Cell = this.cells[y][x];
 
-        const cellElement: HTMLDivElement | null | undefined = this.element?.querySelector(`[data-row="${y}"][data-cell="${x}"]`);
-
-        if (!cellElement) {
-          continue;
-        }
-
         if(cell.isAlive) {
-          cellElement.classList.add(`board__cell--is-alive`);
+          cell.element?.classList.add(`board__cell--is-alive`);
         } else {
-          cellElement.classList.remove(`board__cell--is-alive`);
+          cell.element?.classList.remove(`board__cell--is-alive`);
         }
       }
     }
@@ -166,7 +189,7 @@ class Rule {
   };
 };
 
-let board: Board = new Board(document.getElementById("app"), 10, 10);
+let board: Board = new Board(document.getElementById("game"), 10, 10);
 
 board.addRule(new Rule((cell: Cell) => {
   if(cell.isAlive) {
@@ -189,22 +212,21 @@ board.addRule(new Rule((cell: Cell) => {
 }));
 
 board.addRule(new Rule((cell: Cell) => {
-  if(cell.isAlive) {
-    return cell.countLivingNeighbours() < 4;
+  if (cell.isAlive && cell.countLivingNeighbours() > 3) {
+    return false;
   }
   
   return null;
 }));
 
 board.addRule(new Rule((cell: Cell) => {
-  if(!cell.isAlive) {
-    return cell.countLivingNeighbours() === 3;
+  if(!cell.isAlive && cell.countLivingNeighbours() === 3) {
+    return true;
   }
 
   return null;
 }));
 
-board.cells[3][3].isAlive = true;
 board.render();
 
-setInterval(() => board.nextTurn(), 3000);
+//setInterval(() => board.nextTurn(), 3000);
