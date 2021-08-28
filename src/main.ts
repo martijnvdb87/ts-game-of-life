@@ -54,6 +54,8 @@ class Board {
   height: number;
   cells: Array<Array<Cell>> = new Array<Array<Cell>>();
   rules: Array<Rule> = new Array<Rule>();
+  isDrawing: boolean = false;
+  isDrawingStateAlive: boolean = false;
 
   constructor(element: HTMLElement | null, width: number, height: number) {
     this.element = element;
@@ -130,8 +132,21 @@ class Board {
         cellElement.dataset.row = `${y + 1}`;
         cellElement.dataset.cell = `${x + 1}`;
 
-        cellElement.addEventListener(`click`, () => {
-          cell.isAlive = !cell.isAlive;
+        cellElement.addEventListener(`mousedown`, () => {
+          cell.board.isDrawing = true;
+          cell.board.isDrawingStateAlive = !cell.isAlive;
+          cell.isAlive = cell.board.isDrawingStateAlive;
+          this.update();
+        });
+
+        cellElement.addEventListener(`mouseup`, () => {
+          cell.board.isDrawing = false;
+        });
+
+        cellElement.addEventListener(`mousemove`, () => {
+          if(cell.board.isDrawing) {
+            cell.isAlive = cell.board.isDrawingStateAlive;
+          }
           this.update();
         });
 
@@ -151,7 +166,7 @@ class Board {
     this.element.append(containerElement);
     this.element.append(nextTurnElement);
 
-    nextTurnElement.addEventListener("click", () => {
+    nextTurnElement.addEventListener(`click`, () => {
       this.nextTurn();
     });
 
@@ -189,7 +204,7 @@ class Rule {
   };
 };
 
-let board: Board = new Board(document.getElementById("game"), 10, 10);
+let board: Board = new Board(document.getElementById(`game`), 10, 10);
 
 board.addRule(new Rule((cell: Cell) => {
   if(cell.isAlive) {
