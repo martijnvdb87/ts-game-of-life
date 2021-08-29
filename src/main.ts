@@ -54,8 +54,10 @@ class Board {
   height: number;
   cells: Array<Array<Cell>> = new Array<Array<Cell>>();
   rules: Array<Rule> = new Array<Rule>();
+  interval: number = 500;
   isDrawing: boolean = false;
   isDrawingStateAlive: boolean = false;
+  isPlaying: boolean = false;
 
   constructor(element: HTMLElement | null, width: number, height: number) {
     this.element = element;
@@ -101,6 +103,12 @@ class Board {
       }
     }
     this.update();
+
+    setTimeout(() => {
+      if(this.isPlaying) {
+        this.nextTurn()
+      }
+    }, this.interval);
   };
 
   applyRules(cell: Cell) {
@@ -108,6 +116,17 @@ class Board {
       rule.run(cell);
     });
   };
+
+  play() {
+    if (!this.isPlaying) {
+      this.isPlaying = true;
+      this.nextTurn();
+    }
+  };
+
+  pause() {
+    this.isPlaying = false;
+  }
 
   render() {
     if (!this.element) {
@@ -162,13 +181,33 @@ class Board {
     nextTurnElement.classList.add(`board__next-turn`);
     nextTurnElement.innerHTML = `Next Turn`;
 
+    nextTurnElement.addEventListener(`click`, () => {
+      if(!this.isPlaying) {
+        this.nextTurn();
+      }
+    });
+
+    const playButtonElement: HTMLButtonElement = document.createElement(`button`);
+    playButtonElement.classList.add(`board__play-button`);
+    playButtonElement.innerHTML = `Play`;
+
+    playButtonElement.addEventListener(`click`, () => {
+      this.play();
+    });
+
+    const pauseButtonElement: HTMLButtonElement = document.createElement(`button`);
+    pauseButtonElement.classList.add(`board__pause-button`);
+    pauseButtonElement.innerHTML = `Pause`;
+
+    pauseButtonElement.addEventListener(`click`, () => {
+      this.pause();
+    });
+
     this.element.classList.add(`board`);
     this.element.append(containerElement);
     this.element.append(nextTurnElement);
-
-    nextTurnElement.addEventListener(`click`, () => {
-      this.nextTurn();
-    });
+    this.element.append(playButtonElement);
+    this.element.append(pauseButtonElement);
 
     this.update();
   };
