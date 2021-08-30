@@ -158,7 +158,7 @@ class Board {
           this.update();
         });
 
-        cellElement.addEventListener(`mouseup`, () => {
+        document.addEventListener(`mouseup`, () => {
           cell.board.isDrawing = false;
         });
 
