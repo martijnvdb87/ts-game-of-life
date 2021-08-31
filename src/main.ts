@@ -155,7 +155,8 @@ class Board {
           cell.board.isDrawing = true;
           cell.board.isDrawingStateAlive = !cell.isAlive;
           cell.isAlive = cell.board.isDrawingStateAlive;
-          this.update();
+          
+          cell.element?.classList[cell.isAlive ? `add` : `remove`](`board__cell--is-alive`);
         });
 
         document.addEventListener(`mouseup`, () => {
@@ -165,8 +166,9 @@ class Board {
         cellElement.addEventListener(`mousemove`, () => {
           if(cell.board.isDrawing) {
             cell.isAlive = cell.board.isDrawingStateAlive;
+            
+            cell.element?.classList[cell.isAlive ? `add` : `remove`](`board__cell--is-alive`);
           }
-          this.update();
         });
 
         cell.element = cellElement;
@@ -243,7 +245,7 @@ class Rule {
   };
 };
 
-let board: Board = new Board(document.getElementById(`game`), 10, 10);
+let board: Board = new Board(document.getElementById(`game`), 100, 100);
 
 board.addRule(new Rule((cell: Cell) => {
   if(cell.isAlive) {
@@ -282,5 +284,3 @@ board.addRule(new Rule((cell: Cell) => {
 }));
 
 board.render();
-
-//setInterval(() => board.nextTurn(), 3000);
