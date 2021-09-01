@@ -32,13 +32,22 @@ class Cell {
     if(this.neighbours.length === 0) {
 
       for(let y: number = -1; y < 2; y++) {
-        for(let x:number = -1; x < 2; x++) {
+        for(let x: number = -1; x < 2; x++) {
           if(y === 0 && x === 0) {
             continue;
           }
 
-          if(this.board.cells[this.y + y]?.[this.x + x]) {
-            this.neighbours.push(this.board.cells[this.y + y][this.x + x]);
+          let newY = this.y + y;
+          let newX = this.x + x;
+
+          newY = newY < 0 ? newY + this.board.cells.length : newY;
+          newY = newY >= this.board.cells.length ? newY - this.board.cells.length : newY;          
+
+          newX = newX < 0 ? newX + this.board.cells[newY].length : newX;
+          newX = newX >= this.board.cells[newY].length ? newX - this.board.cells[newY].length : newX;
+
+          if(this.board.cells[newY]?.[newX]) {
+            this.neighbours.push(this.board.cells[newY][newX]);
           }
         }
       }
@@ -245,7 +254,7 @@ class Rule {
   };
 };
 
-let board: Board = new Board(document.getElementById(`game`), 100, 100);
+let board: Board = new Board(document.getElementById(`game`), 10, 10);
 
 board.addRule(new Rule((cell: Cell) => {
   if(cell.isAlive) {
