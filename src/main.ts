@@ -64,6 +64,7 @@ class Board {
   cells: Array<Array<Cell>> = new Array<Array<Cell>>();
   rules: Array<Rule> = new Array<Rule>();
   interval: number = 500;
+  intervalTimer: undefined | number;
   isDrawing: boolean = false;
   isDrawingStateAlive: boolean = false;
   isPlaying: boolean = false;
@@ -91,6 +92,13 @@ class Board {
     this.rules.push(rule);
   };
 
+  setInterval(interval: number) {
+    this.pause();
+    clearTimeout(this.intervalTimer);
+    this.interval = interval;
+    this.play();
+  };
+
   nextTurn() {
     for(let y = 0; y < this.cells.length; y++) {
       for(let x = 0; x < this.cells[y].length; x++) {
@@ -113,7 +121,7 @@ class Board {
     }
     this.update();
 
-    setTimeout(() => {
+    this.intervalTimer = setTimeout(() => {
       if(this.isPlaying) {
         this.nextTurn()
       }
@@ -214,11 +222,25 @@ class Board {
       this.pause();
     });
 
+    const intervalRangeElement: HTMLInputElement = document.createElement(`input`);
+    intervalRangeElement.type = `range`;
+    intervalRangeElement.classList.add(`board__interval-range`);
+    intervalRangeElement.min = `1`;
+    intervalRangeElement.max = `1000`;
+    intervalRangeElement.value = `${1001 - this.interval}`;
+
+    intervalRangeElement.addEventListener(`change`, e => {
+      const target = e.target as HTMLInputElement;
+      const value = 1001 - parseInt(target.value);
+      this.setInterval(value);
+    });
+
     this.element.classList.add(`board`);
     this.element.append(containerElement);
     this.element.append(nextTurnElement);
     this.element.append(playButtonElement);
     this.element.append(pauseButtonElement);
+    this.element.append(intervalRangeElement);
 
     this.update();
   };
@@ -254,7 +276,7 @@ class Rule {
   };
 };
 
-let board: Board = new Board(document.getElementById(`game`), 10, 10);
+let board: Board = new Board(document.getElementById(`game`), 64, 48);
 
 board.addRule(new Rule((cell: Cell) => {
   if(cell.isAlive) {
